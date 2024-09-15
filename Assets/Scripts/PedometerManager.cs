@@ -15,7 +15,7 @@ public class PedometerManager : MonoBehaviour
     private const float maleStepConstant = 0.415f;
     private const float femaleStepConstant = 0.413f;
 
-    private const float caloriesPerMeter = 0.05f; // Adjust this value based on your needs
+    private const float caloriesPerMeter = 0.05f; // Adjust this value based on your needs (This is assumed)
 
     public float WalkDistance
     {

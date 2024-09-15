@@ -5,27 +5,39 @@ using UnityEngine.UI;
 
 public class PedometerSimulator : MonoBehaviour
 {
-    //Variables
     public float walkingStepFrequency = 1.0f;
-    public float runningStepFrequency = 2.5f;
-    public int maxWalkingStepsPerMinute = 100;
-    public int maxRunningStepsPerMinute = 180;
+    public float runningStepFrequency = 2.5f; 
+    public int maxWalkingStepsPerMinute = 100; 
+    public int maxRunningStepsPerMinute = 180; 
 
-    //Parameters
     public PedometerManager pedoManager;
     private float timeSinceLastStep = 0.0f;
     private int totalSteps = 0;
     private float stepInterval;
-    private bool isWalking = false;
+    private bool isWalking = false; 
     private bool isRunning = false;
 
-    public Text stepCounterText;
+    private bool isMoving = false;
+    private float elapsedTime = 0.0f;
+    private float lastStartTime = 0.0f;
 
+    public Text stepCounterText;
+    public Text elapsedTimeText;
+
+    public float ElapsedTime
+    {
+        get
+        {
+            return elapsedTime; // Return the current elapsed time
+        }
+    }
+
+    // turning total steps accessibel even though its private
     public int TotalSteps
     {
         get
         {
-            return totalSteps; // using property method to get public access to totalSteps from other scripts
+            return totalSteps; // Return the current total steps
         }
     }
 
@@ -33,16 +45,15 @@ public class PedometerSimulator : MonoBehaviour
     {
         try
         {
-            // Ensures pedoManager is assigned
+            // Ensure pedoManager is assigned
             if (pedoManager == null)
             {
                 Debug.LogError("PedometerManager is not assigned.");
                 return;
             }
 
-            stepInterval = 1.0f / walkingStepFrequency;
-
-            UpdateStepCounterUI();
+            stepInterval = 1.0f / walkingStepFrequency; // Calculate step interval for walking
+            UpdateStepCounterUI(); // Update the step counter UI
         }
         catch (System.Exception ex)
         {
@@ -54,25 +65,27 @@ public class PedometerSimulator : MonoBehaviour
     {
         try
         {
-            HandleInput();
+            HandleInput(); // Handle user input for walking or running
 
-            timeSinceLastStep += Time.deltaTime;
+            timeSinceLastStep += Time.deltaTime; // Update time since last step
 
-            // If walking, simulate walking
+            // Simulate walking if walking
             if (isWalking && timeSinceLastStep >= stepInterval)
             {
                 SimulateWalking();
-                timeSinceLastStep = 0.0f;
+                timeSinceLastStep = 0.0f; // Reset step timer
             }
 
-            // If running, simulate running
+            // Simulate running if running
             if (isRunning && timeSinceLastStep >= stepInterval)
             {
                 SimulateRunning();
-                timeSinceLastStep = 0.0f;
+                timeSinceLastStep = 0.0f; // Reset step timer
             }
 
+            // Update UI elements
             UpdateStepCounterUI();
+            UpdateElapsedTime();
         }
         catch (System.Exception ex)
         {
@@ -84,28 +97,33 @@ public class PedometerSimulator : MonoBehaviour
     {
         try
         {
-            // Walking with the "W" key
+            // Start walking when "W" key is pressed
             if (Input.GetKeyDown(KeyCode.W))
             {
                 isWalking = true;
                 isRunning = false;
-                stepInterval = 1.0f / walkingStepFrequency;
+                stepInterval = 1.0f / walkingStepFrequency; // Set step interval for walking
                 Debug.Log("Started walking.");
+                StartMovementTimer(); // Start or resume the movement timer
             }
 
+            // Start running when "R" key is pressed
             if (Input.GetKeyDown(KeyCode.R))
             {
                 isRunning = true;
                 isWalking = false;
-                stepInterval = 1.0f / runningStepFrequency;
+                stepInterval = 1.0f / runningStepFrequency; // Set step interval for running
                 Debug.Log("Started running.");
+                StartMovementTimer(); // Start or resume the movement timer
             }
 
+            // Stop moving when keys are released
             if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.R))
             {
                 isWalking = false;
                 isRunning = false;
                 Debug.Log("Stopped moving.");
+                StopMovementTimer(); // Stop the movement timer
             }
         }
         catch (System.Exception ex)
@@ -120,10 +138,11 @@ public class PedometerSimulator : MonoBehaviour
         {
             if (pedoManager == null) throw new System.NullReferenceException("PedometerManager is not assigned.");
 
+            // Calculate steps based on a random factor and step frequency
             float randomFactor = Random.Range(0.4f, 2.2f);
             int stepsThisInterval = Mathf.RoundToInt(randomFactor * (pedoManager.stepLength * walkingStepFrequency));
             stepsThisInterval = Mathf.Clamp(stepsThisInterval, maxWalkingStepsPerMinute / 60, 2);
-            totalSteps += stepsThisInterval;
+            totalSteps += stepsThisInterval; // Update total steps
             Debug.Log("Walking - Steps this interval: " + stepsThisInterval + " Total: " + totalSteps.ToString());
         }
         catch (System.Exception ex)
@@ -137,11 +156,10 @@ public class PedometerSimulator : MonoBehaviour
         try
         {
             if (pedoManager == null) throw new System.NullReferenceException("PedometerManager is not assigned.");
-
             float randomFactor = Random.Range(0.4f, 2.2f);
             int stepsThisInterval = Mathf.RoundToInt(randomFactor * (pedoManager.stepLength * runningStepFrequency));
             stepsThisInterval = Mathf.Clamp(stepsThisInterval, 2, maxRunningStepsPerMinute / 60);
-            totalSteps += stepsThisInterval;
+            totalSteps += stepsThisInterval; // Update total steps
             Debug.Log("Running - Steps this interval: " + stepsThisInterval + " Total: " + totalSteps.ToString());
         }
         catch (System.Exception ex)
@@ -150,14 +168,46 @@ public class PedometerSimulator : MonoBehaviour
         }
     }
 
-    //Method for UI Text Count
+    void StartMovementTimer()
+    {
+        if (!isMoving)
+        {
+            isMoving = true;
+            lastStartTime = Time.time; // Capture the time when movement starts or resumes
+        }
+    }
+
+    void StopMovementTimer()
+    {
+        if (isMoving)
+        {
+            isMoving = false;
+            elapsedTime += Time.time - lastStartTime; // Accumulate the elapsed time when stopping
+        }
+    }
+
+    void UpdateElapsedTime()
+    {
+        if (isMoving && elapsedTimeText != null)
+        {
+            // Calculate and display the total elapsed time including current session
+            float currentElapsedTime = elapsedTime + (Time.time - lastStartTime);
+            elapsedTimeText.text = "Time: " + currentElapsedTime.ToString("F2") + " seconds";
+        }
+        else if (elapsedTimeText != null)
+        {
+            // Display the accumulated elapsed time if not moving
+            elapsedTimeText.text = "Time: " + elapsedTime.ToString("F2") + " seconds";
+        }
+    }
+
     public void UpdateStepCounterUI()
     {
         try
         {
             if (stepCounterText != null)
             {
-                stepCounterText.text = totalSteps.ToString();
+                stepCounterText.text = totalSteps.ToString(); // Update step counter UI
             }
             else
             {
@@ -170,8 +220,11 @@ public class PedometerSimulator : MonoBehaviour
         }
     }
 
-    public void ResetTotalStep() //Method to reset total step count
+    public void ResetTotalStep()
     {
         totalSteps = 0;
+        isMoving = false;
+        elapsedTime = 0.0f;
+        lastStartTime = 0.0f;
     }
 }

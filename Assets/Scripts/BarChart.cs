@@ -12,7 +12,6 @@ public class BarChart : MonoBehaviour
     List<Bar> bars = new List<Bar>();
     float chartHeight;
 
-
     void Start()
     {
         // Calculate the total height for the chart based on device screen height and UI element size
