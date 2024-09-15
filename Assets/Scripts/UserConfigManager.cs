@@ -9,7 +9,6 @@ public class UserConfigManager : MonoBehaviour
     public UserConfiguration userConfig;
     public InputField usernameInputField;
     public InputField heightInputField;
-    public Slider accelSlider;
     public Toggle genderToggle;
     public Text errorMessage;
 
@@ -41,8 +40,6 @@ public class UserConfigManager : MonoBehaviour
         }
 
         userConfig.isMale = genderToggle.isOn;
-
-        userConfig.accelLimit = accelSlider.value;
 
         if (!userConfig.IsValidConfiguration())
         {
@@ -78,7 +75,6 @@ public class UserConfigManager : MonoBehaviour
             usernameInputField.text = userConfig.userName;
             heightInputField.text = userConfig.height.ToString();
             genderToggle.isOn = userConfig.isMale;
-            accelSlider.value = userConfig.accelLimit;
         }
         else
         {

@@ -9,10 +9,9 @@ public class UserConfiguration : ScriptableObject
     public string userName = "Your Name";
     public bool isMale = true;
     public float height = 1.75f;
-    public float accelLimit = 1.0f;
 
     public bool IsValidConfiguration() //Ensures the user does not go past a range for the paramenters
     {
-        return !string.IsNullOrEmpty(userName) && height > 1.0f && height < 2.5f && accelLimit > 1f && accelLimit < 5.0f;
+        return !string.IsNullOrEmpty(userName) && height > 1.0f && height < 2.5f;
     }
 }
