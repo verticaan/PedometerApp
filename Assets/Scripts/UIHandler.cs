@@ -92,8 +92,8 @@ public class UIHandler : MonoBehaviour
     {
         if (progressCircle != null && pedometerSimulator != null)
         {
-            // Calculate fill amount based on total steps and maximum steps
-            float stepRatio = Mathf.Clamp01((float)pedometerSimulator.TotalSteps / maxSteps);
+            // Calculate fill amount based on total steps and maximum steps that has been set...
+            float stepRatio = Mathf.Clamp01((float)pedometerSimulator.TotalSteps / maxSteps); //clamp to a value that changes based on a desired step
             progressCircle.fillAmount = stepRatio; // Update the fill amount of the progress circle
         }
     }
