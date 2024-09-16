@@ -16,73 +16,109 @@ public class PedometerSave : MonoBehaviour
     {
         filePath = Path.Combine(Application.persistentDataPath, "pedometerData.json");
 
-        // Load the last saved date from existing data, if available
-        List<PedometerData> existingData = LoadExistingData();
-        if (existingData.Count > 0)
+        try
         {
-            // Get the last entry's timestamp and parse it into DateTime
-            string lastTimestamp = existingData[existingData.Count - 1].timestamp;
-            lastSavedDate = DateTime.ParseExact(lastTimestamp, "dd-MM", null);
+            // Load the last saved date from existing data, if availab
+            List<PedometerData> existingData = LoadExistingData();
+
+            if (existingData.Count > 0)
+            {
+                // Get the last entry's timestamp and parse it into DateTime
+                string lastTimestamp = existingData[existingData.Count - 1].timestamp;
+
+                if (!DateTime.TryParseExact(lastTimestamp, "dd-MM", null, System.Globalization.DateTimeStyles.None, out lastSavedDate))
+                {
+                    Debug.LogWarning("Failed to parse last saved date. Starting from today's date.");
+                    lastSavedDate = DateTime.UtcNow; // Use current date if parsing fails
+                }
+            }
+            else
+            {
+ 
+                lastSavedDate = DateTime.UtcNow;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            // If no data exists, start from today's date
-            lastSavedDate = DateTime.UtcNow;
+            Debug.LogError("Error during Awake: " + ex.Message);
+            lastSavedDate = DateTime.UtcNow; // Set default date in case of error
         }
     }
 
     public void SaveData()
     {
-        // Increment the saved date by one day on each save
-        lastSavedDate = lastSavedDate.AddDays(1);
-
-        // Create an instance of my Class and reference it
-        PedometerData data = new PedometerData
+        if (pedoSimulator == null || pedoManager == null)
         {
-            // Use the incremented date as the timestamp
-            timestamp = lastSavedDate.ToString("dd-MM"),
-            totalSteps = pedoSimulator.TotalSteps,
-            walkDistance = pedoManager.WalkDistance,
-            caloriesBurned = pedoManager.CaloriesBurned,
-        };
+            Debug.LogError("PedometerSimulator or PedometerManager is not assigned.");
+            return;
+        }
 
-        // Read the existing data from the file
-        List<PedometerData> dataList = LoadExistingData();
+        try
+        {
+            // Increment the saved date by one day on each save
+            lastSavedDate = lastSavedDate.AddDays(1);
 
-        // Append the new data
-        dataList.Add(data);
+            PedometerData data = new PedometerData
+            {
+                timestamp = lastSavedDate.ToString("dd-MM"),
+                totalSteps = pedoSimulator.TotalSteps,
+                walkDistance = pedoManager.WalkDistance,
+                caloriesBurned = pedoManager.CaloriesBurned,
+            };
 
-        // Serialize the list to JSON
-        string json = JsonUtility.ToJson(new PedometerDataList { dataList = dataList }, true);
+            // Load existing data and append the new entry
+            List<PedometerData> dataList = LoadExistingData();
+            dataList.Add(data);
 
-        // Save the JSON to a file
-        File.WriteAllText(filePath, json);
-        Debug.Log("Data saved to " + filePath + " with timestamp: " + data.timestamp);
+            // Serialize to list
+            string json = JsonUtility.ToJson(new PedometerDataList { dataList = dataList }, true);
+            File.WriteAllText(filePath, json);
 
-        // Reset steps after saving
-        pedoSimulator.ResetTotalStep();
+            Debug.Log("Data saved to " + filePath + " with timestamp: " + data.timestamp);
+
+            // Reset steps after saving
+            pedoSimulator.ResetTotalStep();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error while saving data: " + ex.Message);
+        }
     }
 
     public void ClearAllData()
     {
-        // Overwrite the file with an empty list
-        PedometerDataList emptyDataList = new PedometerDataList { dataList = new List<PedometerData>() };
-        string json = JsonUtility.ToJson(emptyDataList, true);
+        try
+        {
+            // Overwrite the file with an empty list
+            PedometerDataList emptyDataList = new PedometerDataList { dataList = new List<PedometerData>() };
+            string json = JsonUtility.ToJson(emptyDataList, true);
+            File.WriteAllText(filePath, json);
 
-        // Save the empty JSON to the file
-        File.WriteAllText(filePath, json);
-        Debug.Log("All data cleared from " + filePath);
+            Debug.Log("All data cleared from " + filePath);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error while clearing data: " + ex.Message);
+        }
     }
 
-    public List<PedometerData> LoadExistingData() // Method is responsible for loading the existing pedometer data
+    public List<PedometerData> LoadExistingData() // Method is responsible for loading
     {
-        if (File.Exists(filePath)) // Check if file exists
+        try
         {
-            string json = File.ReadAllText(filePath); // Read content of file
-            PedometerDataList dataList = JsonUtility.FromJson<PedometerDataList>(json); // Deserialize the JSON file to an object list
-            return dataList.dataList; // Return the list of data
+            if (File.Exists(filePath))
+            {
+                string json = File.ReadAllText(filePath); // Read content of file
+                PedometerDataList dataList = JsonUtility.FromJson<PedometerDataList>(json); // Deserialize
+                return dataList.dataList ?? new List<PedometerData>(); // Return data or empty list
+            }
         }
-        return new List<PedometerData>(); // Return empty list if no file exists
+        catch (Exception ex)
+        {
+            Debug.LogError("Error while loading data: " + ex.Message);
+        }
+
+        return new List<PedometerData>();
     }
 }
 

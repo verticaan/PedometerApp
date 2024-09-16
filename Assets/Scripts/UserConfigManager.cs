@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -54,31 +55,41 @@ public class UserConfigManager : MonoBehaviour
 
     private void SaveToJSON()
     {
-        string json = JsonUtility.ToJson(userConfig, true);
-
-        // Write the JSON string to the file
-        File.WriteAllText(filePath, json);
+        try
+        {
+            string json = JsonUtility.ToJson(userConfig, true);
+            File.WriteAllText(filePath, json);
+        }
+        catch (Exception ex)
+        {
+            errorMessage.text = "Failed to save configuration: " + ex.Message;
+            Debug.LogError("Error saving to JSON: " + ex.Message);
+        }
 
     }
 
     public void LoadConfiguration()
     {
-        if (File.Exists(filePath))
+        try
         {
-            // Read the JSON string from the file
-            string json = File.ReadAllText(filePath);
+            if (File.Exists(filePath))
+            {
+                string json = File.ReadAllText(filePath);
+                JsonUtility.FromJsonOverwrite(json, userConfig);
 
-            // Deserialize the JSON back into a UserConfiguration object
-            JsonUtility.FromJsonOverwrite(json, userConfig);
-
-            // Populate the UI fields with the loaded configuration
-            usernameInputField.text = userConfig.userName;
-            heightInputField.text = userConfig.height.ToString();
-            genderToggle.isOn = userConfig.isMale;
+                usernameInputField.text = userConfig.userName;
+                heightInputField.text = userConfig.height.ToString();
+                genderToggle.isOn = userConfig.isMale;
+            }
+            else
+            {
+                errorMessage.text = "No saved configuration found.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage.text = "No saved configuration found.";
+            errorMessage.text = "Failed to load configuration: " + ex.Message;
+            Debug.LogError("Error loading config" + ex.Message);
         }
     }
 }

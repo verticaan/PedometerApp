@@ -21,7 +21,7 @@ public class BarChart : MonoBehaviour
 
         if (pedometerData == null || pedometerData.Count == 0) //check if data is available and shows error
         {
-            Debug.LogWarning("No pedometer data available to display."); // Exit early if no data is available
+            Debug.LogWarning("No pedometer data - BarChart");
             return; 
         }
 

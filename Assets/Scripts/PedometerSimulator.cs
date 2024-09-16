@@ -5,12 +5,15 @@ using UnityEngine.UI;
 
 public class PedometerSimulator : MonoBehaviour
 {
+    // Define varaibles
     public float walkingStepFrequency = 1.0f;
     public float runningStepFrequency = 2.5f; 
     public int maxWalkingStepsPerMinute = 100; 
     public int maxRunningStepsPerMinute = 180; 
 
     public PedometerManager pedoManager;
+    
+    //Define parameters
     private float timeSinceLastStep = 0.0f;
     private int totalSteps = 0;
     private float stepInterval;
@@ -102,22 +105,20 @@ public class PedometerSimulator : MonoBehaviour
             {
                 isWalking = true;
                 isRunning = false;
-                stepInterval = 1.0f / walkingStepFrequency; // Set step interval for walking
+                stepInterval = 1.0f / walkingStepFrequency;
                 Debug.Log("Started walking.");
                 StartMovementTimer(); // Start or resume the movement timer
             }
 
-            // Start running when "R" key is pressed
             if (Input.GetKeyDown(KeyCode.R))
             {
                 isRunning = true;
                 isWalking = false;
-                stepInterval = 1.0f / runningStepFrequency; // Set step interval for running
+                stepInterval = 1.0f / runningStepFrequency;
                 Debug.Log("Started running.");
                 StartMovementTimer(); // Start or resume the movement timer
             }
 
-            // Stop moving when keys are released
             if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.R))
             {
                 isWalking = false;
