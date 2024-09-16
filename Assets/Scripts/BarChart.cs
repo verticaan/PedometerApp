@@ -45,9 +45,9 @@ public class BarChart : MonoBehaviour
             Bar newBar = Instantiate<Bar>(barPrefab, transform);
             RectTransform rt = newBar.bar.GetComponent<RectTransform>(); //get rect transform to modify bar size
 
-            float normalizedValue = ((float)data[i].totalSteps / (float)maxSteps) * 5f; //tried to get a normalised value based on the max value of the totalsteps list
+            float normalizedValue = ((float)data[i].totalSteps / (float)maxSteps) * 2f; //tried to get a normalised value based on the max value of the totalsteps list
 
-            rt.sizeDelta = new Vector2(rt.sizeDelta.x, -chartHeight * normalizedValue); //used that normalised value to plot the bar chart
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, chartHeight * normalizedValue); //used that normalised value to plot the bar chart
 
             if (newBar.stepText != null) //set step text anchored above bar
             {
